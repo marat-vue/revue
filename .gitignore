@@ -1,0 +1,7 @@
+.obsidian/workspace.json
+.claude/
+node_modules/
+site/.nuxt/
+site/.output/
+site/dist/
+*.log

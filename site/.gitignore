@@ -1,0 +1,16 @@
+# зависимости
+/node_modules
+
+# сборка Nuxt
+/.nuxt/
+/.output/
+/.data/
+/dist/
+
+# прочее
+/coverage
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+*.tsbuildinfo
