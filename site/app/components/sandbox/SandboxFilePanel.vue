@@ -3,7 +3,7 @@ import { toast } from "vue-sonner";
 import { FilePlusIcon, PencilIcon, Trash2Icon } from "lucide-vue-next";
 import { useSandpack } from "./sandpack";
 
-const PROTECTED = new Set(["/package.json", "/index.html", "/public/index.html", "/index.tsx", "/src/main.ts"]);
+const PROTECTED = new Set(["/package.json", "/index.html", "/public/index.html", "/src/main.ts"]);
 
 function normalizePath(raw: string) {
   const path = raw.trim().replace(/\\/g, "/").replace(/\/{2,}/g, "/");
@@ -28,7 +28,7 @@ function submit() {
   const active = sp.activeFile.value;
   if (!mode.value) return;
   if (path.endsWith("/") || !/\.[a-z0-9]+$/i.test(path)) {
-    toast.error("Укажите имя файла с расширением, например components/Card.tsx");
+    toast.error("Укажите имя файла с расширением, например components/Card.vue");
     return;
   }
   if (path in sp.files && (mode.value === "create" || path !== active)) {
@@ -73,7 +73,7 @@ function remove() {
       <input
         ref="input"
         v-model="value"
-        placeholder="/components/Card.tsx"
+        placeholder="/components/Card.vue"
         class="h-7 w-full rounded-md border bg-background px-2 font-mono text-xs outline-none focus:border-foreground/40"
         @keydown.esc="mode = null"
         @blur="mode = null"

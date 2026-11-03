@@ -2,7 +2,7 @@
 import { toast } from "vue-sonner";
 import { CodeIcon, Columns2Icon, ExternalLinkIcon, EyeIcon, FlaskConicalIcon, FolderTreeIcon, RotateCcwIcon, TerminalIcon } from "lucide-vue-next";
 import type { Component } from "vue";
-import { STARTERS, exampleStarter, templateEnvironment, type ProjectId, type Starter } from "./starters";
+import { STARTERS, exampleStarter, isSandboxTemplate, templateEnvironment, type ProjectId, type Starter } from "./starters";
 import { CURRENT_KEY, PROJECT_KEY, VIEW_KEY, readJSON, removeKey, saveAsLessonProject, writeJSON, type SavedProject } from "./storage";
 import { LESSON_SNIPPET_KEY, type LessonSnippet } from "~/utils/sandbox-shared";
 import { openInCodeSandbox } from "./open-in-codesandbox";
@@ -10,9 +10,10 @@ import { openInCodeSandbox } from "./open-in-codesandbox";
 /* ───────────── загрузка проектов ───────────── */
 
 function loadProject(id: ProjectId): Starter | null {
+  if (id !== "lesson" && !STARTERS.some((s) => s.id === id)) return null;
   const saved = readJSON<SavedProject>(PROJECT_KEY(id));
   const starter = STARTERS.find((s) => s.id === id);
-  if (saved?.files && Object.keys(saved.files).length) {
+  if (saved?.files && Object.keys(saved.files).length && isSandboxTemplate(saved.template)) {
     return {
       id,
       label: saved.label ?? starter?.label ?? "Из урока",
@@ -31,9 +32,14 @@ function takeLessonSnippet(): Starter | null {
   const snippet = readJSON<LessonSnippet>(LESSON_SNIPPET_KEY);
   if (!snippet?.blocks?.length) return null;
   removeKey(LESSON_SNIPPET_KEY);
-  const project = exampleStarter(snippet.blocks, snippet.title);
-  saveAsLessonProject({ template: project.template, mode: project.mode, files: project.files, activeFile: project.activeFile, hint: project.hint });
-  return project;
+  try {
+    const project = exampleStarter(snippet.blocks, snippet.title);
+    saveAsLessonProject({ template: project.template, mode: project.mode, files: project.files, activeFile: project.activeFile, hint: project.hint });
+    return project;
+  } catch {
+    toast.error("Этот тип примеров больше не поддерживается песочницей");
+    return null;
+  }
 }
 
 function initialProject(): Starter {
@@ -70,7 +76,7 @@ watch(view, (v) => writeJSON(VIEW_KEY, v));
 
 const tabs = computed(() => {
   const list = STARTERS.map((s) => ({ id: s.id, label: s.label }));
-  const hasLesson = project.value.id === "lesson" || Boolean(readJSON(PROJECT_KEY("lesson")));
+  const hasLesson = project.value.id === "lesson" || Boolean(loadProject("lesson"));
   return hasLesson ? [...list, { id: "lesson" as ProjectId, label: "Из урока" }] : list;
 });
 

@@ -1,10 +1,14 @@
-import TEMPLATES from "./templates.json";
+import TEMPLATES from "./templates.json" with { type: "json" };
 import type { ExampleBlock } from "~/utils/sandbox-shared";
 
 /** Среды Sandpack, которые используются в песочнице. */
-export type SandboxTemplate = "static" | "vanilla" | "vanilla-ts" | "react-ts" | "vue-ts" | "test-ts";
+export type SandboxTemplate = "static" | "vanilla" | "vanilla-ts" | "vue-ts" | "test-ts";
 
-export type ProjectId = "html" | "js" | "ts" | "react" | "vue" | "canvas" | "tests" | "react-tests" | "lesson";
+export type ProjectId = "html" | "js" | "ts" | "vue" | "canvas" | "tests" | "lesson";
+
+export function isSandboxTemplate(value: unknown): value is SandboxTemplate {
+  return typeof value === "string" && Object.hasOwn(TEMPLATES, value);
+}
 
 export interface Starter {
   id: ProjectId;
@@ -24,7 +28,7 @@ export function templateBase(template: SandboxTemplate): Record<string, string> 
   return { ...TEMPLATES[template].files } as Record<string, string>;
 }
 
-/** Окружение бандлера Sandpack для шаблона (parcel, vue-cli, create-react-app, static). */
+/** Окружение бандлера Sandpack для шаблона (parcel, vue-cli, static). */
 export function templateEnvironment(template: SandboxTemplate) {
   return TEMPLATES[template].environment;
 }
@@ -263,100 +267,6 @@ export function createStore<T>(initial: T) {
   "/styles.css": `body { font-family: system-ui, sans-serif; margin: 0; padding: 32px; }
 li { cursor: pointer; padding: 4px 0; }
 li.done { text-decoration: line-through; color: #9ca3af; }
-`,
-};
-
-const REACT_FILES = {
-  "/App.tsx": `import { useState } from "react";
-import { Button } from "./components/Button";
-import { Counter } from "./components/Counter";
-import { useTheme } from "./hooks/useTheme";
-
-export default function App() {
-  const { theme, toggle } = useTheme();
-  const [step, setStep] = useState(1);
-
-  return (
-    <main className={\`app \${theme}\`}>
-      <h1>React-песочница</h1>
-      <p className="muted">Компоненты лежат в разных файлах и импортируются друг в друга.</p>
-
-      <Counter step={step} />
-
-      <div className="row">
-        {[1, 5, 10].map((n) => (
-          <Button key={n} variant={n === step ? "solid" : "outline"} onClick={() => setStep(n)}>
-            Шаг {n}
-          </Button>
-        ))}
-      </div>
-
-      <Button variant="ghost" onClick={toggle}>
-        Тема: {theme === "dark" ? "тёмная" : "светлая"}
-      </Button>
-    </main>
-  );
-}
-`,
-  "/components/Button.tsx": `import type { ButtonHTMLAttributes } from "react";
-
-type Variant = "solid" | "outline" | "ghost";
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-}
-
-export function Button({ variant = "solid", className = "", ...props }: ButtonProps) {
-  return <button className={\`button button--\${variant} \${className}\`} {...props} />;
-}
-`,
-  "/components/Counter.tsx": `import { useState } from "react";
-import { Button } from "./Button";
-
-export function Counter({ step }: { step: number }) {
-  const [count, setCount] = useState(0);
-
-  return (
-    <section className="counter">
-      <Button variant="outline" onClick={() => setCount((c) => c - step)}>−{step}</Button>
-      <output>{count}</output>
-      <Button variant="outline" onClick={() => setCount((c) => c + step)}>+{step}</Button>
-    </section>
-  );
-}
-`,
-  "/hooks/useTheme.ts": `import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
-
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() =>
-    localStorage.getItem("theme") === "dark" ? "dark" : "light",
-  );
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return { theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) };
-}
-`,
-  "/styles.css": `* { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, sans-serif; }
-
-.app { min-height: 100vh; padding: 40px 24px; background: #fff; color: #111; transition: background 0.2s; }
-.app.dark { background: #111; color: #f5f5f5; }
-.muted { opacity: 0.6; }
-.row { display: flex; gap: 8px; margin: 16px 0; }
-
-.counter { display: flex; align-items: center; gap: 16px; margin-top: 24px; }
-.counter output { min-width: 3ch; text-align: center; font: 600 32px/1 ui-monospace, monospace; }
-
-.button { padding: 8px 14px; border-radius: 6px; border: 1px solid currentColor; font: inherit; cursor: pointer; }
-.button--solid { background: #111; color: #fff; border-color: #111; }
-.dark .button--solid { background: #f5f5f5; color: #111; border-color: #f5f5f5; }
-.button--outline { background: transparent; color: inherit; }
-.button--ghost { background: transparent; color: inherit; border-color: transparent; text-decoration: underline; }
 `,
 };
 
@@ -635,129 +545,6 @@ describe("Cart", () => {
 `,
 };
 
-const REACT_TESTS_FILES = {
-  "/App.tsx": `import { Counter } from "./Counter";
-import { LoginForm } from "./LoginForm";
-
-export default function App() {
-  return (
-    <main style={{ fontFamily: "system-ui", padding: 24 }}>
-      <Counter initial={0} />
-      <hr />
-      <LoginForm onSubmit={(data) => alert(JSON.stringify(data))} />
-    </main>
-  );
-}
-`,
-  "/Counter.tsx": `import { useState } from "react";
-
-export function Counter({ initial = 0 }: { initial?: number }) {
-  const [count, setCount] = useState(initial);
-  return (
-    <div>
-      <p>Счётчик: {count}</p>
-      <button onClick={() => setCount((c) => c + 1)}>Увеличить</button>
-      <button onClick={() => setCount(initial)} disabled={count === initial}>
-        Сбросить
-      </button>
-    </div>
-  );
-}
-`,
-  "/Counter.test.tsx": `import { render, screen, fireEvent } from "@testing-library/react";
-import { Counter } from "./Counter";
-
-describe("Counter", () => {
-  test("показывает начальное значение", () => {
-    render(<Counter initial={5} />);
-    expect(screen.getByText("Счётчик: 5")).toBeTruthy();
-  });
-
-  test("увеличивает значение по клику", () => {
-    render(<Counter />);
-    fireEvent.click(screen.getByRole("button", { name: "Увеличить" }));
-    fireEvent.click(screen.getByRole("button", { name: "Увеличить" }));
-    expect(screen.getByText("Счётчик: 2")).toBeTruthy();
-  });
-
-  test("кнопка сброса неактивна в начальном состоянии", () => {
-    render(<Counter />);
-    const reset = screen.getByRole("button", { name: "Сбросить" }) as HTMLButtonElement;
-    expect(reset.disabled).toBe(true);
-  });
-});
-`,
-  "/LoginForm.tsx": `import { useState, type FormEvent } from "react";
-
-interface Props {
-  onSubmit: (data: { email: string }) => void;
-}
-
-export function LoginForm({ onSubmit }: Props) {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!email.includes("@")) {
-      setError("Введите корректный email");
-      return;
-    }
-    setError("");
-    onSubmit({ email });
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Email
-        <input value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <button type="submit">Войти</button>
-      {error && <p role="alert">{error}</p>}
-    </form>
-  );
-}
-`,
-  "/LoginForm.test.tsx": `import { render, screen, fireEvent } from "@testing-library/react";
-import { LoginForm } from "./LoginForm";
-
-describe("LoginForm", () => {
-  test("показывает ошибку при некорректном email", () => {
-    const onSubmit = jest.fn();
-    render(<LoginForm onSubmit={onSubmit} />);
-
-    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "not-an-email" } });
-    fireEvent.click(screen.getByRole("button", { name: "Войти" }));
-
-    expect(screen.getByRole("alert").textContent).toBe("Введите корректный email");
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  test("отправляет данные при корректном email", () => {
-    const onSubmit = jest.fn();
-    render(<LoginForm onSubmit={onSubmit} />);
-
-    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "dev@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "Войти" }));
-
-    expect(onSubmit).toHaveBeenCalledWith({ email: "dev@example.com" });
-    expect(screen.queryByRole("alert")).toBeNull();
-  });
-});
-`,
-  "/styles.css": `body { margin: 0; }
-button { margin-right: 8px; }
-`,
-};
-
-/** package.json шаблона с дополнительными зависимостями. */
-function withDeps(template: SandboxTemplate, deps: Record<string, string>) {
-  const pkg = JSON.parse(templateBase(template)["/package.json"]);
-  pkg.dependencies = { ...pkg.dependencies, ...deps };
-  return JSON.stringify(pkg, null, 2);
-}
-
 function withBase(template: SandboxTemplate, files: Record<string, string>, drop: string[] = []) {
   const base = templateBase(template);
   for (const path of drop) delete base[path];
@@ -793,15 +580,6 @@ export const STARTERS: Starter[] = [
     files: withBase("vanilla-ts", TS_FILES),
   },
   {
-    id: "react",
-    label: "React",
-    hint: "Компоненты в разных файлах, хуки, TSX",
-    template: "react-ts",
-    mode: "preview",
-    activeFile: "/App.tsx",
-    files: withBase("react-ts", REACT_FILES),
-  },
-  {
     id: "vue",
     label: "Vue",
     hint: "SFC, composables, v-model и TypeScript",
@@ -828,18 +606,6 @@ export const STARTERS: Starter[] = [
     activeFile: "/src/math.test.ts",
     files: withBase("test-ts", TESTS_FILES, ["/add.ts", "/add.test.ts"]),
   },
-  {
-    id: "react-tests",
-    label: "Testing Library",
-    hint: "Тесты React-компонентов: render, screen, события",
-    template: "react-ts",
-    mode: "tests",
-    activeFile: "/Counter.test.tsx",
-    files: withBase("react-ts", {
-      ...REACT_TESTS_FILES,
-      "/package.json": withDeps("react-ts", { "@testing-library/react": "^16.0.0", "@testing-library/dom": "^10.0.0" }),
-    }),
-  },
 ];
 
 /* ───────────── код из урока ───────────── */
@@ -849,9 +615,9 @@ const LANG_ALIASES: Record<string, string> = { javascript: "js", typescript: "ts
 const isTestCode = (code: string) => /\b(describe|test|it)(\.\w+)?\s*\(/.test(code) && /\bexpect\s*\(/.test(code);
 
 /** Пакеты, которые уже есть в средах Sandpack или не нужны в браузере. */
-const BUILTIN_PACKAGES = new Set(["react", "react-dom", "vue", "vitest", "@jest/globals"]);
+const BUILTIN_PACKAGES = new Set(["vue", "vitest", "@jest/globals"]);
 
-/** Голые импорты (`from "zustand"`) → зависимости package.json с версией latest. */
+/** Голые импорты (`from "pinia"`) → зависимости package.json с версией latest. */
 function detectDependencies(code: string) {
   const deps: Record<string, string> = {};
   for (const [, spec] of code.matchAll(/(?:from\s+|import\s*\(?\s*)["']([^"'./][^"']*)["']/g)) {
@@ -903,10 +669,11 @@ ${indented}
 
 /**
  * Собирает проект из блоков кода урока. Среда выбирается по языкам:
- * тесты → test-ts / react-ts / vue-ts, vue → vue-ts, tsx/jsx → react-ts, ts → vanilla-ts, js → vanilla, html/css → static.
+ * тесты → test-ts / vue-ts, vue → vue-ts, ts → vanilla-ts, js → vanilla, html/css → static.
  * Блоки с `file=` кладутся в свои файлы, остальные — в стандартные файлы среды.
  */
 export function exampleStarter(input: ExampleBlock[], title?: string): Starter {
+  if (input.some((b) => /^(jsx|tsx)$/i.test(b.lang))) throw new Error("Неподдерживаемый язык примера");
   const blocks = input.map((b) => ({
     ...b,
     lang: LANG_ALIASES[b.lang.toLowerCase()] ?? b.lang.toLowerCase(),
@@ -918,9 +685,8 @@ export function exampleStarter(input: ExampleBlock[], title?: string): Starter {
   const deps = detectDependencies(all);
 
   let template: SandboxTemplate;
-  if (tests) template = has("vue") ? "vue-ts" : has("tsx", "jsx") ? "react-ts" : "test-ts";
+  if (tests) template = has("vue") ? "vue-ts" : "test-ts";
   else if (has("vue")) template = "vue-ts";
-  else if (has("tsx", "jsx")) template = "react-ts";
   else if (has("ts")) template = "vanilla-ts";
   else if (has("js")) template = "vanilla";
   else template = "static";
@@ -947,10 +713,10 @@ export function exampleStarter(input: ExampleBlock[], title?: string): Starter {
   const cssCode = join(unnamed("css"));
 
   if (tests) {
-    const scripts = unnamed("js", "ts", "tsx", "jsx");
+    const scripts = unnamed("js", "ts");
     const testBlocks = scripts.filter((b) => isTestCode(b.code));
     const sources = scripts.filter((b) => !isTestCode(b.code));
-    const ext = template === "react-ts" ? "tsx" : "ts";
+    const ext = "ts";
     const dir = template === "vue-ts" ? "/src" : "";
     const jestDom = usesJestDom(all);
     const header = jestDom ? `import "@testing-library/jest-dom";\n` : "";
@@ -960,9 +726,6 @@ export function exampleStarter(input: ExampleBlock[], title?: string): Starter {
     const extra = { ...deps, ...(jestDom ? { "@testing-library/jest-dom": "^6.0.0" } : {}) };
     if (template === "vue-ts") {
       Object.assign(extra, { "@testing-library/vue": "^8.1.0", "@testing-library/dom": "^10.0.0", "@vue/test-utils": "^2.4.6" });
-    } else if (template === "react-ts") {
-      Object.assign(extra, { "@testing-library/react": "^16.0.0", "@testing-library/dom": "^10.0.0" });
-      if (!files["/App.tsx"]) files["/App.tsx"] = `export default function App() {\n  return <p>Тесты запускаются в панели справа.</p>;\n}\n`;
     } else {
       files["/package.json"] = JSON.stringify({ dependencies: {}, devDependencies: { typescript: "^4.0.0" }, main: Object.keys(files)[0] ?? "/example.test.ts" });
     }
@@ -973,15 +736,6 @@ export function exampleStarter(input: ExampleBlock[], title?: string): Starter {
     vue.slice(1).forEach((b, i) => assign([b], `/src/components/Example${i + 1}.vue`, b.code));
     assign(unnamed("ts", "js"), "/src/example.ts", join(unnamed("ts", "js")));
     assign(unnamed("css"), "/src/styles.css", cssCode);
-    files["/package.json"] = withExtraDeps(template, undefined, deps);
-  } else if (template === "react-ts") {
-    const components = unnamed("tsx", "jsx");
-    const code = join(components);
-    const app = !code || /export\s+default/.test(code)
-      ? code
-      : `${code}\nexport default function App() {\n  return <p>Добавьте сюда компонент из примера выше.</p>;\n}\n`;
-    assign(components, "/App.tsx", (cssCode ? `import "./styles.css";\n` : "") + app);
-    assign(unnamed("css"), "/styles.css", cssCode);
     files["/package.json"] = withExtraDeps(template, undefined, deps);
   } else if (template === "vanilla-ts" || template === "vanilla") {
     const entry = template === "vanilla-ts" ? "/index.ts" : "/index.js";

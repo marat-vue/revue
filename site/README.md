@@ -19,8 +19,8 @@
   (ключ — название папки без номера; раздел без записи попадает в «Прочее»).
 - `/sandbox/` — песочница на Vue (`app/components/sandbox/`): редактор CodeMirror 6, дерево файлов, превью, консоль и панель тестов.
   Код собирает бандлер CodeSandbox через [`@codesandbox/sandpack-client`](https://sandpack.codesandbox.io/docs/advanced-usage/client) в iframe,
-  поэтому песочнице нужен интернет. Проекты HTML/CSS, JavaScript, TypeScript, React, Vue, Canvas, а также тесты (Jest-совместимый раннер,
-  React Testing Library и Vue Testing Library). Каждый проект сохраняется в `localStorage`. Кнопка ▶ у блоков кода в уроке открывает код
+  поэтому песочнице нужен интернет. Проекты HTML/CSS, JavaScript, TypeScript, Vue, Canvas, а также тесты (Jest-совместимый раннер,
+  Vue Testing Library). Каждый проект сохраняется в `localStorage`. Кнопка ▶ у блоков кода в уроке открывает код
   в проекте «Из урока».
 - Живые примеры: блоки кода с мета-флагом `run` (`remarkLiveExamples` в `server/utils/markdown.ts`) превращаются в мини-песочницу прямо
   в уроке (`app/components/lesson/LiveExample.vue`); редактор и бандлер подгружаются только по кнопке «Запустить». Синтаксис — в корневом README.

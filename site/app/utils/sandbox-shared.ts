@@ -16,4 +16,4 @@ export interface LessonSnippet {
 }
 
 /** Языки блоков кода, которые можно запустить. */
-export const SANDBOX_LANGS = new Set(["html", "css", "js", "javascript", "ts", "typescript", "jsx", "tsx", "vue"]);
+export const SANDBOX_LANGS = new Set(["html", "css", "js", "javascript", "ts", "typescript", "vue"]);

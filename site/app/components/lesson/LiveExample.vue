@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { PlayIcon } from "lucide-vue-next";
-import type { ExampleBlock } from "~/utils/sandbox-shared";
+import { SANDBOX_LANGS, type ExampleBlock } from "~/utils/sandbox-shared";
 
 const props = defineProps<{ blocks: ExampleBlock[] }>();
 const LANG_LABELS: Record<string, string> = { javascript: "js", typescript: "ts" };
 
 const running = ref(false);
 const online = useOnline();
+const supported = computed(() => props.blocks.every((b) => SANDBOX_LANGS.has(b.lang.toLowerCase())));
 const langs = computed(() => [...new Set(props.blocks.map((b) => LANG_LABELS[b.lang] ?? b.lang))].join(" + "));
 const title = () => document.querySelector("h1")?.textContent?.trim();
 </script>
 
 <template>
-  <div class="not-prose overflow-hidden rounded-[var(--radius)] border bg-card">
+  <div v-if="supported" class="not-prose overflow-hidden rounded-[var(--radius)] border bg-card">
     <!-- редактор и бандлер грузятся отдельным чанком только после нажатия «Запустить» -->
     <LazyLiveExampleRunner v-if="running" :blocks="blocks" :title="title()" @close="running = false" />
     <button

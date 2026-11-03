@@ -2,7 +2,7 @@ import { loadSandpackClient, type SandpackClient, type SandpackMessage } from "@
 import type { InjectionKey } from "vue";
 
 /**
- * Состояние песочницы на Vue — замена SandpackProvider из sandpack-react.
+ * Состояние песочницы на Vue.
  * Файлы проекта живут в реактивном объекте; превью и тесты — отдельные iframe-клиенты бандлера
  * CodeSandbox, которым изменения отправляются с задержкой (recompileDelay).
  */

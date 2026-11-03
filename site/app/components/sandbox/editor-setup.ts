@@ -58,12 +58,8 @@ export function language(path: string): Extension {
     case "mjs":
     case "cjs":
       return javascript();
-    case "jsx":
-      return javascript({ jsx: true });
     case "ts":
       return javascript({ typescript: true });
-    case "tsx":
-      return javascript({ jsx: true, typescript: true });
     case "html":
       return html();
     case "css":
